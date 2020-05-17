@@ -1,7 +1,10 @@
 package bogConfig
 
-import ()
+import (
+	"os"
+)
 
 func getToken(){
-	return os.Getenv("BOT_TOKEN")
+	token = os.Getenv("BOT_TOKEN")
+	return token
 }
