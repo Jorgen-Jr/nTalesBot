@@ -4,11 +4,21 @@ import (
 	"log"
 	// "github.com/ntalesbot/config/botConfig"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
-	"os"
+	"github.com/kelseyhightower/envconfig"
 )
 
+type Config struct {
+	BOT_TOKEN	string
+}
+
 func main() {
-	bot, err := tgbotapi.NewBotAPI(os.Getenv("BOT_TOKEN"))
+	var config Config;
+    err := envconfig.Process("APP", &config)
+    if err != nil {
+        log.Fatal(err)
+	}
+	
+	bot, err := tgbotapi.NewBotAPI(config.BOT_TOKEN)
 	if err != nil {
 		log.Panic(err)
 	}
