@@ -69,5 +69,5 @@ bot.on('message', (msg) => {
   const chatId = msg.chat.id;
 
   // send a message to the chat acknowledging receipt of their message
-  bot.sendMessage(chatId, 'To use this bot, simply use the inline option @ntalesbot + number. You can query trivias, dates, years and math curiosities related to the given number. For dates, please use the format dd/MM. Numbers less than 30 will give a trivia about the day in january.');
+  bot.sendMessage(chatId, 'To use this bot, simply use the inline option @ntalesbot + number. You can query trivias, dates, years and math curiosities related to the given number. For dates, please use the format month/day. Numbers less than 30 will give a trivia about the day in january.');
 });
