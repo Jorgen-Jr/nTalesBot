@@ -22,106 +22,98 @@ exports.handler = async event => {
 
     let query = "";
 
-    if (query) {
-        console.log("Fetching: " + query);
+    console.log("Fetching: " + query);
 
-        let results = [];
+    let results = [];
 
-        //Catch the word from TheSaurus
-        results.push(...(await ThesaurusController.default(query)));
+    if (inline_query) {
+        let facts = [];
 
-        //Fetch results from Priberam
-        results.push(...(await PriberamController.default(query)));
+        const query = inline_query.query;
 
-        //Catch the word from Urban Dictionary
-        results.push(...(await UrbanDictionaryController.default(query)));
+        if (query.charAt(2) === '/') {
+            date = await NumbersController.date(query);
 
-        if (inline_query) {
-            let facts = [];
+            facts.push({
+                title: 'Date',
+                description: date,
+            });
+        } else if (!isNaN(query)) {
+            trivia = await NumbersController.trivia(query);
+            math = await NumbersController.math(query);
+            year = await NumbersController.year(query);
+            triviaFragment = await NumbersController.triviaFragment(query);
+            yearFragment = await NumbersController.yearFragment(query);
 
-            if (queryContent.charAt(2) === '/') {
-                date = await NumbersController.date(queryContent);
-
+            facts.push({
+                title: 'Trivia',
+                description: trivia,
+            });
+            facts.push({
+                title: 'Math',
+                description: math,
+            });
+            if (parseInt(query) <= 31) {
+                date = await NumbersController.date(query);
                 facts.push({
                     title: 'Date',
                     description: date,
                 });
-            } else if (!isNaN(queryContent)) {
-                trivia = await NumbersController.trivia(queryContent);
-                math = await NumbersController.math(queryContent);
-                year = await NumbersController.year(queryContent);
-                triviaFragment = await NumbersController.triviaFragment(queryContent);
-                yearFragment = await NumbersController.yearFragment(queryContent);
-
-                facts.push({
-                    title: 'Trivia',
-                    description: trivia,
-                });
-                facts.push({
-                    title: 'Math',
-                    description: math,
-                });
-                if (parseInt(queryContent) <= 31) {
-                    date = await NumbersController.date(queryContent);
-                    facts.push({
-                        title: 'Date',
-                        description: date,
-                    });
-                }
-                facts.push({
-                    title: 'Year',
-                    description: year,
-                });
-                if (triviaFragment) {
-                    facts.push({
-                        title: 'Trivia Fragment',
-                        description: triviaFragment,
-                    });
-                }
-                if (yearFragment) {
-                    facts.push({
-                        title: 'Year Fragment',
-                        description: yearFragment,
-                    });
-                }
             }
-
-            facts.map((fact, index) => {
-                results.push({
-                    type: 'Article',
-                    id: index,
-                    title: fact.title,
-                    description: fact.description,
-                    input_message_content: {
-                        message_text: fact.description,
-                    },
-                })
-            })
-
-            await answerInlineQuery({
-                inline_query_id: inline_query.id,
-                results,
-            })
-        }
-        else if (message) {
-            const chatId = message.chat.id;
-
-            /* Answer message. */
-
-            // send a message to the chat acknowledging receipt of their message
-            const parse_mode = "HTML";
-
-            // send a message in case it doesn't find anything.
-            response = {
-                chat_id: chatId,
-                text: "Sorry, coudn't catch that 😢 \nPlease use only inline commands for now",
-                parse_mode,
+            facts.push({
+                title: 'Year',
+                description: year,
+            });
+            if (triviaFragment) {
+                facts.push({
+                    title: 'Trivia Fragment',
+                    description: triviaFragment,
+                });
             }
-
-            const res = await sendMessage(response);
-            console.log("Response generated: ", res.data);
+            if (yearFragment) {
+                facts.push({
+                    title: 'Year Fragment',
+                    description: yearFragment,
+                });
+            }
         }
 
+        facts.map((fact, index) => {
+            results.push({
+                type: 'Article',
+                id: index,
+                title: fact.title,
+                description: fact.description,
+                input_message_content: {
+                    message_text: fact.description,
+                },
+            })
+        })
+
+        const res = await answerInlineQuery({
+            inline_query_id: inline_query.id,
+            results,
+        });
+
+        console.log("Response generated: ", res.data);
+    }
+    else if (message) {
+        const chatId = message.chat.id;
+
+        /* Answer message. */
+
+        // send a message to the chat acknowledging receipt of their message
+        const parse_mode = "HTML";
+
+        // send a message in case it doesn't find anything.
+        response = {
+            chat_id: chatId,
+            text: "Sorry, coudn't catch that 😢 \nPlease use only inline commands for now",
+            parse_mode,
+        }
+
+        const res = await sendMessage(response);
+        console.log("Response generated: ", res.data);
     }
 
     async function sendMessage(response) {
